@@ -10,28 +10,51 @@
                 <i class="fas fa-cloud-upload-alt text-blue-500 text-2xl mr-3"></i>
                 <h2 class="text-2xl font-bold text-gray-800">Upload File to S3 Storage</h2>
             </div>
-            <form action="{{ route('upload') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+            <form id="uploadForm" action="{{ route('upload') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                 @csrf
                 <div class="border-2 border-dashed border-blue-300 rounded-xl p-8 text-center bg-blue-50 hover:bg-blue-100 transition cursor-pointer" onclick="document.getElementById('file').click()">
                     <input type="file" name="file" id="file" class="hidden" onchange="handleFileSelect(this)">
                     <i class="fas fa-file-upload text-4xl text-blue-400 mb-4"></i>
                     <p class="text-lg text-gray-700 font-medium">Click to select a file</p>
-                    <p class="text-sm text-gray-500 mt-2">Max size: 10MB • All file types supported</p>
+                    <p class="text-sm text-gray-500 mt-2">Max size: 100MB (For Test Purpose) • All file types supported</p>
                     <p id="fileName" class="text-blue-600 font-semibold mt-3"></p>
                 </div>
                 
-                <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center">
-                    <i class="fas fa-upload mr-2"></i>
-                    Upload to S3 & Process in Queue
-                </button>
+            <button id="uploadBtn" type="submit" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center">
+                <span id="uploadBtnIcon"><i class="fas fa-upload mr-2"></i></span>
+                <span id="uploadBtnText">Upload to S3 & Process in Queue</span>
+            </button>
+
             </form>
+            <!-- Progress Bar -->
+            <div id="progressWrapper" class="mt-4 hidden w-full bg-gray-200 rounded-lg overflow-hidden">
+                <div id="progressBar" class="bg-blue-500 text-white text-center h-6 w-0 transition-all">0%</div>
+            </div>
+
+            <!-- Upload Message -->
+            <div id="uploadMessage" class="mt-4"></div>
 
             @if(session('success'))
-                <div class="mt-4 p-4 bg-green-100 text-green-700 rounded-lg border border-green-200">
+                <div class="mt-4 p-4 bg-green-100 text-green-700 rounded-lg border border-green-200 flex items-center">
                     <i class="fas fa-check-circle mr-2"></i>
-                    {{ session('success') }}
+                    <span>{{ session('success') }}</span>
                 </div>
             @endif
+
+            @if($errors->any())
+                <div class="mt-4 p-4 bg-red-100 text-red-700 rounded-lg border border-red-200 flex items-start">
+                    <i class="fas fa-exclamation-circle mr-2 mt-1"></i>
+                    <div>
+                        <ul class="list-disc list-inside">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            @endif
+
+
         </div>
 
         <!-- System Stats Card -->
@@ -167,6 +190,92 @@
 @endsection
 
 @push('scripts')
+<script>
+const uploadForm = document.getElementById('uploadForm');
+const progressWrapper = document.getElementById('progressWrapper');
+const progressBar = document.getElementById('progressBar');
+const uploadMessage = document.getElementById('uploadMessage');
+const uploadBtn = document.getElementById('uploadBtn');
+const uploadBtnIcon = document.getElementById('uploadBtnIcon');
+const uploadBtnText = document.getElementById('uploadBtnText');
+
+uploadForm.addEventListener('submit', function(e) {
+    e.preventDefault(); // prevent default form submit
+
+    const fileInput = document.getElementById('file');
+    if (!fileInput.files.length) {
+        alert('Please select a file to upload.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    formData.append('_token', '{{ csrf_token() }}');
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '{{ route('upload') }}', true);
+
+    // Start spinner
+    uploadBtn.disabled = true;
+    uploadBtnIcon.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>';
+    uploadBtnText.textContent = 'Uploading...';
+
+    // Show progress
+    xhr.upload.onprogress = function(e) {
+        if (e.lengthComputable) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            progressWrapper.classList.remove('hidden');
+            progressBar.style.width = percent + '%';
+            progressBar.textContent = percent + '%';
+        }
+    };
+
+    xhr.onload = function() {
+        // Reset button
+        uploadBtn.disabled = false;
+        uploadBtnIcon.innerHTML = '<i class="fas fa-upload mr-2"></i>';
+        uploadBtnText.textContent = 'Upload to S3 & Process in Queue';
+
+        progressBar.style.width = '0%';
+        progressBar.textContent = '0%';
+
+        if (xhr.status === 200) {
+            uploadMessage.innerHTML = `
+                <div class="p-4 bg-green-100 text-green-700 rounded-lg border border-green-200 flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    File uploaded successfully! Processing in background...
+                </div>
+            `;
+            uploadForm.reset();
+            document.getElementById('fileName').innerHTML = '';
+        } else {
+            uploadMessage.innerHTML = `
+                <div class="p-4 bg-red-100 text-red-700 rounded-lg border border-red-200 flex items-start">
+                    <i class="fas fa-exclamation-circle mr-2 mt-1"></i>
+                    <div>${xhr.responseText}</div>
+                </div>
+            `;
+        }
+    };
+
+    xhr.onerror = function() {
+        uploadBtn.disabled = false;
+        uploadBtnIcon.innerHTML = '<i class="fas fa-upload mr-2"></i>';
+        uploadBtnText.textContent = 'Upload to S3 & Process in Queue';
+
+        uploadMessage.innerHTML = `
+            <div class="p-4 bg-red-100 text-red-700 rounded-lg border border-red-200 flex items-start">
+                <i class="fas fa-exclamation-circle mr-2 mt-1"></i>
+                <div>Upload failed due to network error.</div>
+            </div>
+        `;
+    };
+
+    xhr.send(formData);
+});
+
+</script>
+
 <script>
 function handleFileSelect(input) {
     if (input.files && input.files[0]) {

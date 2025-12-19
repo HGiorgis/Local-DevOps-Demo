@@ -133,7 +133,64 @@ docker-composer.yml
 docker-compose exec app-1 chmod -R 775 storage bootstrap/cache
 ```
 
-## 📚 **What This Proves to Clients**
+### **Increase the Nginx App file size (default is 1m):**
+
+```bash
+docker-compose exec app-1 sh -c "sed -i '/client_max_body_size/ s/client_max_body_size[[:space:]]*[0-9]*[mM];/client_max_body_size 200M;/' /etc/nginx/nginx.conf"
+
+docker exec -it laravel-app-1 nginx -s reload
+```
+
+## **Enviorment file .env**
+
+```bash
+APP_NAME=laravel-devops-demo
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost:8080
+
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=root
+DB_PASSWORD=root
+
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_CLIENT=phpredis
+
+QUEUE_CONNECTION=redis
+SESSION_DRIVER=redis
+CACHE_DRIVER=redis
+
+# Session using Redis
+SESSION_DRIVER=redis
+SESSION_CONNECTION=session
+SESSION_LIFETIME=120
+SESSION_SECURE_COOKIE=false
+SESSION_PATH=/
+SESSION_HTTP_ONLY=true
+SESSION_SAME_SITE=lax
+REDIS_PREFIX=laravel_shared:
+
+COOKIE_DOMAIN=localhost
+COOKIE_SECURE=false
+SESSION_COOKIE=laravel_session
+
+# S3/MinIO Configuration
+AWS_ACCESS_KEY_ID=minioadmin
+AWS_SECRET_ACCESS_KEY=minioadmin
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=laravel
+AWS_ENDPOINT=http://minio:9000
+AWS_USE_PATH_STYLE_ENDPOINT=true
+
+```
+
+## 📚 **What This Proves of Opreation**
 
 ### **For DevOps Role:**
 

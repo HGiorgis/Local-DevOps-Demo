@@ -23,6 +23,7 @@ use App\Models\UploadedFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * @OA\Tag(
@@ -87,12 +88,21 @@ class ApiController extends Controller
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-     public function upload(Request $request)
+    public function upload(Request $request)
     {
-        $request->validate([
-            'file' => 'required|file|max:10240',
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|max:100240', // ~100MB
+        ], [
+            'file.required' => 'Please select a file to upload.',
+            'file.file' => 'The selected item must be a valid file.',
+            'file.max' => 'The file is too large. Maximum allowed size is 100 MB.',
         ]);
 
+        if ($validator->fails()) {
+            return redirect()->back()
+                            ->withErrors($validator)
+                            ->withInput();
+        }
         $file = $request->file('file');
         $filename = time() . '_' . $file->getClientOriginalName();
         $path = 'uploads/' . date('Y/m/d') . '/' . $filename;
@@ -125,6 +135,7 @@ class ApiController extends Controller
 
         return redirect()->back()->with('success', 'File uploaded successfully! Processing in background...');
     }
+
     /**
      * @OA\Get(
      *     path="/stats",

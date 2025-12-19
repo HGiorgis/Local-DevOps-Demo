@@ -23,7 +23,6 @@ services:
     container_name: laravel-app-1
     volumes:
       - ./laravel-app:/var/www/html
-      - ./nginx/app.conf:/etc/nginx/conf.d/default.conf
     environment:
       - APP_NAME=Laravel_Node_1
       - APP_ENV=local
@@ -72,7 +71,6 @@ services:
     container_name: laravel-app-2
     volumes:
       - ./laravel-app:/var/www/html
-      - ./nginx/app.conf:/etc/nginx/conf.d/default.conf
     environment:
       - APP_NAME=Laravel_Node_2
       - APP_ENV=local

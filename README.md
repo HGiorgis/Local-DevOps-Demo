@@ -136,7 +136,7 @@ docker-compose exec app-1 chmod -R 775 storage bootstrap/cache
 ### **Increase the Nginx App file size (default is 1m):**
 
 ```bash
-docker-compose exec app-1 sh -c "sed -i '/client_max_body_size/ s/client_max_body_size[[:space:]]*[0-9]*[mM];/client_max_body_size 200M;/' /etc/nginx/nginx.conf"
+docker-compose exec app-1 sh -c "sed -i '/client_max_body_size/ s/client_max_body_size[[:space:]]*[0-9]*[mM];/client_max_body_size 100M;/' /etc/nginx/nginx.conf"
 
 docker exec -it laravel-app-1 nginx -s reload
 ```

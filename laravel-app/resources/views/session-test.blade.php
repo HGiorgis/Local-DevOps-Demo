@@ -68,40 +68,72 @@
             </div>
         </div>
 
-        <!-- Session History Card -->
-        <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center">
-                    <i class="fas fa-history text-purple-500 text-2xl mr-3"></i>
-                    <h2 class="text-2xl font-bold text-gray-800">Session History</h2>
-                </div>
-                <span class="bg-purple-100 text-purple-800 text-sm font-semibold px-3 py-1 rounded-full">
-                    {{ count($sessionData) }} requests
-                </span>
+    <!-- Session History Card -->
+    <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center">
+                <i class="fas fa-history text-purple-500 text-2xl mr-3"></i>
+                <h2 class="text-2xl font-bold text-gray-800">Session History</h2>
             </div>
+            <span class="bg-purple-100 text-purple-800 text-sm font-semibold px-3 py-1 rounded-full">
+                {{ count($sessionData) }} requests
+            </span>
+        </div>
+        
+        <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+            @php
+                // Reverse the array so newest is first
+                $reversedData = array_reverse($sessionData);
+            @endphp
             
-            <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
-                @foreach($sessionData as $index => $item)
-                    <div class="border-l-4 {{ $item['node'] == 'Laravel_Node_1' ? 'border-blue-500' : 'border-green-500' }} pl-4 py-3 bg-gray-50 rounded-r-lg">
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-full {{ $item['node'] == 'Laravel_Node_1' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600' }} flex items-center justify-center mr-3">
-                                    {{ $item['node'] == 'Laravel_Node_1' ? '1' : '2' }}
-                                </div>
-                                <div>
-                                    <p class="font-semibold text-gray-800">{{ $item['node'] }}</p>
-                                    <p class="text-xs text-gray-500">Request #{{ $index + 1 }}</p>
-                                </div>
+            @foreach($reversedData as $index => $item)
+                @php
+                    // Calculate the original position from the end
+                    $originalIndex = count($sessionData) - $index;
+                @endphp
+                <div class="border-l-4 {{ $item['node'] == 'Laravel_Node_1' ? 'border-blue-500' : 'border-green-500' }} pl-4 py-3 bg-gray-50 rounded-r-lg">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full {{ $item['node'] == 'Laravel_Node_1' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600' }} flex items-center justify-center mr-3">
+                                {{ $item['node'] == 'Laravel_Node_1' ? '1' : '2' }}
                             </div>
-                            <span class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($item['timestamp'])->format('H:i:s') }}</span>
+                            <div>
+                                <p class="font-semibold text-gray-800">{{ $item['node'] }}</p>
+                                <p class="text-xs text-gray-500">Request #{{ $originalIndex }}</p>
+                            </div>
                         </div>
-                        <div class="text-xs text-gray-500 mt-2">
-                            <i class="fas fa-globe mr-1"></i> IP: {{ $item['client_ip'] }}
+                        <div class="text-right">
+                            <span class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($item['timestamp'])->format('H:i:s') }}</span>
+                            <div class="text-xs text-gray-400 mt-1">
+                                {{ \Carbon\Carbon::parse($item['timestamp'])->format('M d') }}
+                            </div>
                         </div>
                     </div>
-                @endforeach
-            </div>
+                    <div class="text-xs text-gray-500 mt-2">
+                        <i class="fas fa-globe mr-1"></i> IP: {{ $item['client_ip'] }}
+                        @if(isset($item['entry_id']))
+                            <span class="ml-3">
+                                <i class="fas fa-hashtag mr-1"></i> ID: {{ substr($item['entry_id'], 0, 8) }}...
+                            </span>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
         </div>
+        
+        @if(count($sessionData) > 0)
+        <div class="mt-4 pt-4 border-t border-gray-200 text-center text-sm text-gray-500">
+            <i class="fas fa-info-circle mr-1"></i>
+            Showing newest first ({{ count($sessionData) }} total requests)
+        </div>
+        @else
+        <div class="text-center py-8 text-gray-400">
+            <i class="fas fa-inbox text-4xl mb-3"></i>
+            <p>No session history yet</p>
+            <p class="text-sm mt-1">Refresh the page to start tracking</p>
+        </div>
+        @endif
+    </div>
     </div>
 
     <!-- Instructions Card -->

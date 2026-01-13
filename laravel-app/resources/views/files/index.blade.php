@@ -121,50 +121,74 @@
                 </p>
             </div>
         </div>
-
-        <!-- Recent Files Card -->
-        <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center">
-                    <i class="fas fa-history text-orange-500 text-2xl mr-3"></i>
-                    <h2 class="text-2xl font-bold text-gray-800">Recent Files</h2>
-                </div>
-                <span class="bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded-full">{{ count($files) }} files</span>
-            </div>
-            <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
-                @forelse($files as $file)
-                    <div class="border-l-4 {{ $file->processed_by_worker ? 'border-green-500' : 'border-yellow-500' }} pl-4 py-3 bg-gray-50 rounded-r-lg">
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center">
-                                @php
-                                    $icon = 'file';
-                                    if (str_contains($file->mime_type, 'image')) $icon = 'file-image';
-                                    elseif (str_contains($file->mime_type, 'pdf')) $icon = 'file-pdf';
-                                    elseif (str_contains($file->mime_type, 'text')) $icon = 'file-alt';
-                                @endphp
-                                <i class="fas fa-{{ $icon }} text-gray-500 mr-2"></i>
-                                <span class="font-medium truncate max-w-xs">{{ $file->original_name }}</span>
-                            </div>
-                            <span class="text-sm {{ $file->processed_by_worker ? 'text-green-600 bg-green-100' : 'text-yellow-600 bg-yellow-100' }} px-2 py-1 rounded-full">
-                                {{ $file->processed_by_worker ? '✓ Processed' : '⏳ Queued' }}
-                            </span>
-                        </div>
-                        <div class="text-sm text-gray-500 mt-2 flex justify-between">
-                            <span><i class="fas fa-hdd mr-1"></i> {{ $file->size }}</span>
-                            <span><i class="fas fa-clock mr-1"></i> {{ $file->created_at->diffForHumans() }}</span>
-                        </div>
-                        <div class="text-xs text-gray-400 mt-1">
-                            <i class="fas fa-server mr-1"></i> Node: {{ $file->uploaded_by_node }}
-                        </div>
-                    </div>
-                @empty
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-folder-open text-4xl mb-3"></i>
-                        <p>No files uploaded yet.</p>
-                    </div>
-                @endforelse
-            </div>
+<!-- Recent Files Card - Simple Version -->
+<div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center">
+            <i class="fas fa-history text-orange-500 text-2xl mr-3"></i>
+            <h2 class="text-2xl font-bold text-gray-800">Recent Files</h2>
         </div>
+        <span class="bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded-full">{{ count($files) }} files</span>
+    </div>
+    
+    <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+        @forelse($files as $file)
+            <div class="border-l-4 {{ $file->processed_by_worker ? 'border-green-500' : 'border-yellow-500' }} pl-4 py-3 bg-gray-50 rounded-r-lg">
+                <!-- File info in a grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-2">
+                    <!-- File name with truncation -->
+                    <div class="lg:col-span-2 flex items-center min-w-0">
+                        @php
+                            $icon = 'file';
+                            if (str_contains($file->mime_type, 'image')) $icon = 'file-image';
+                            elseif (str_contains($file->mime_type, 'pdf')) $icon = 'file-pdf';
+                            elseif (str_contains($file->mime_type, 'text')) $icon = 'file-alt';
+                        @endphp
+                        <i class="fas fa-{{ $icon }} text-gray-500 mr-2 flex-shrink-0"></i>
+                        <p class="font-medium text-gray-800 truncate" title="{{ $file->original_name }}">
+                            {{ $file->original_name }}
+                        </p>
+                    </div>
+                    
+                    <!-- File size -->
+                    <div class="text-sm text-gray-600 truncate">
+                        <i class="fas fa-hdd mr-1 text-gray-400"></i>
+                        {{ $file->size }}
+                    </div>
+                    
+                    <!-- Status and time -->
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm {{ $file->processed_by_worker ? 'text-green-600 bg-green-100' : 'text-yellow-600 bg-yellow-100' }} px-2 py-1 rounded-full">
+                            {{ $file->processed_by_worker ? '✓' : '⏳' }}
+                        </span>
+                        <span class="text-sm text-gray-500 ml-2 truncate" title="{{ $file->created_at->format('Y-m-d H:i:s') }}">
+                            {{ $file->created_at->diffForHumans() }}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Additional info row -->
+                <div class="mt-2 flex flex-wrap gap-3 text-xs text-gray-500">
+                    <span>
+                        <i class="fas fa-server mr-1"></i>
+                        {{ $file->uploaded_by_node }}
+                    </span>
+                    @if($file->mime_type)
+                        <span class="truncate max-w-[150px]" title="{{ $file->mime_type }}">
+                            <i class="fas fa-file-code mr-1"></i>
+                            {{ $file->mime_type }}
+                        </span>
+                    @endif
+                </div>
+            </div>
+        @empty
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-folder-open text-4xl mb-3"></i>
+                <p>No files uploaded yet.</p>
+            </div>
+        @endforelse
+    </div>
+</div>
     </div>
 </div>
 

@@ -278,32 +278,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Real-time Job Status -->
-    <div class="mt-8 bg-white rounded-xl shadow-lg overflow-hidden">
-        <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 px-6 py-4">
-            <h2 class="text-xl font-bold text-white flex items-center">
-                <i class="fas fa-chart-line mr-3"></i> Real-time Job Processing
-            </h2>
-        </div>
-        <div class="p-6">
-            <div id="jobStatusChart" class="h-64"></div>
-            <div class="mt-4 grid grid-cols-3 gap-4">
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-blue-600" id="jobsPerMinute">0</div>
-                    <div class="text-sm text-gray-600">Jobs/Min</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-green-600" id="successRate">100%</div>
-                    <div class="text-sm text-gray-600">Success Rate</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-red-600" id="avgProcessingTime">0s</div>
-                    <div class="text-sm text-gray-600">Avg. Time</div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <style>
